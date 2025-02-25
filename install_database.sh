@@ -50,6 +50,10 @@ docker run -d \
   --bind-address=0.0.0.0 \
   --default-authentication-plugin=mysql_native_password
 
+sleep 20  # 等待MySQL初始化
+echo "=== 部署验证 ==="
+docker exec mysql-server mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "STATUS;"  
+
 # ----------------------
 # 部署后验证
 # ----------------------
