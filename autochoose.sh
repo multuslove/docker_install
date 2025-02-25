@@ -183,7 +183,16 @@ main() {
     configure_docker_repo
     install_docker
 
-    # 验证安装
     if check_docker_installed; then
         show_progress "✅ 安装成功！Docker版本信息："
-        docker --version |
+        docker --version | tee -a "$LOG_FILE"
+    else
+        show_progress "❌ 安装失败，请检查日志：${LOG_FILE}"
+        exit 1
+    fi
+}  # <--- 添加这个闭合花括号
+
+# 启动脚本
+show_progress "=== 开始执行 Docker 自动化管理脚本 ==="
+main  # <--- 执行主函数
+show_progress "操作日志已保存至：${LOG_FILE}"
