@@ -27,7 +27,7 @@ docker run -d \
   --memory 512m \
   --cpus 1 \
   --restart unless-stopped \
-  --health-cmd "redis-cli ping | grep PONG" \  # 修复健康检查命令
+  --health-cmd "redis-cli ping | grep PONG" \
   --health-interval 30s \
   --health-timeout 10s \
   -p 6379:6379 \
