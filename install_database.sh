@@ -7,7 +7,6 @@
 REDIS_IMAGE="crpi-jg69vy9pa9c65dg4.cn-hangzhou.personal.cr.aliyuncs.com/alyuncangku/redis:alpine3.21"
 MYSQL_IMAGE="crpi-jg69vy9pa9c65dg4.cn-hangzhou.personal.cr.aliyuncs.com/alyuncangku/mysql:8.1"
 MYSQL_ROOT_PASSWORD="password"      # 手动设置root密码
-MYSQL_USER_PASSWORD="password"      # 手动设置应用用户密码
 
 # ----------------------
 # 基础设施准备
@@ -18,7 +17,6 @@ docker network inspect app-network >/dev/null 2>&1 || docker network create app-
 # 创建持久化数据卷
 docker volume create redis_data
 docker volume create mysql_data
-
 # ----------------------
 # Redis容器部署
 # ----------------------
@@ -52,9 +50,6 @@ docker run -d \
   -p 3306:3306 \
   -v mysql_data:/var/lib/mysql \
   -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-  -e MYSQL_DATABASE=minecraft \
-  -e MYSQL_USER= luckperms\
-  -e MYSQL_PASSWORD=${MYSQL_USER_PASSWORD} \
   --security-opt no-new-privileges \
   --character-set-server=utf8mb4 \
   --collation-server=utf8mb4_unicode_ci \
