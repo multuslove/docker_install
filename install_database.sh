@@ -31,7 +31,7 @@ docker run -d \
   --log-driver journald \
   --health-cmd "redis-cli ping" \
   --health-interval 30s \
-  -p 6379:6379 \                  # 开放所有网络接口
+  -p 6379:6379 \
   -v redis_data:/data \
   --security-opt no-new-privileges \
   ${REDIS_IMAGE} \
@@ -49,7 +49,7 @@ docker run -d \
   --log-driver journald \
   --health-cmd="mysqladmin ping -uroot -p${MYSQL_ROOT_PASSWORD}" \
   --health-interval 30s \
-  -p 3306:3306 \                  # 开放所有网络接口
+  -p 3306:3306 \
   -v mysql_data:/var/lib/mysql \
   -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
   -e MYSQL_DATABASE=appdb \
