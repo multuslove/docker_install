@@ -41,20 +41,14 @@ docker run -d \
 docker run -d \
   --name mysql-server \
   --network app-network \
-  --memory 1g \
-  --cpus 1 \
-  --restart unless-stopped \
-  --log-driver journald \
-  --health-cmd="mysqladmin ping -uroot -p${MYSQL_ROOT_PASSWORD}" \
-  --health-interval 30s \
   -p 3306:3306 \
   -v mysql_data:/var/lib/mysql \
-  -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} \
-  --security-opt no-new-privileges \
+  -e MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}" \
+  ${MYSQL_IMAGE} \
   --character-set-server=utf8mb4 \
   --collation-server=utf8mb4_unicode_ci \
   --bind-address=0.0.0.0 \
-  ${MYSQL_IMAGE} \
+  --default-authentication-plugin=mysql_native_password
 
 # ----------------------
 # 部署后验证
