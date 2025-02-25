@@ -56,11 +56,10 @@ docker run -d \
   -e MYSQL_USER= luckperms\
   -e MYSQL_PASSWORD=${MYSQL_USER_PASSWORD} \
   --security-opt no-new-privileges \
-  ${MYSQL_IMAGE} \
   --character-set-server=utf8mb4 \
   --collation-server=utf8mb4_unicode_ci \
   --bind-address=0.0.0.0 \
-  --default-authentication-plugin=mysql_native_password 
+  ${MYSQL_IMAGE} \
 
 # ----------------------
 # 部署后验证
