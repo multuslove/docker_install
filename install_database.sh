@@ -1,10 +1,9 @@
 #!/bin/bash
-# 部署前请先执行: chmod +x deploy.sh && ./deflix.sh
+# 部署前请先执行: chmod +x deploy.sh && ./deploy.sh
 
 # ----------------------
 # 用户自定义配置区（必须修改！）
 # ----------------------
-REDIS_IMAGE="crpi-jg69vy9pa9c65dg4.cn-hangzhou.personal.cr.aliyuncs.com/alyuncangku/redis:alpine3.21"
 MYSQL_IMAGE="crpi-jg69vy9pa9c65dg4.cn-hangzhou.personal.cr.aliyuncs.com/alyuncangku/mysql:8.1"
 MYSQL_ROOT_PASSWORD="password"      # 手动设置root密码
 
@@ -15,28 +14,10 @@ MYSQL_ROOT_PASSWORD="password"      # 手动设置root密码
 docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
 
 # 创建持久化数据卷
-docker volume create redis_data
 docker volume create mysql_data
-# ----------------------
-# Redis容器部署
-# ----------------------
-docker run -d \
-  --name redis-server \
-  --network app-network \
-  --memory 512m \
-  --cpus 1 \
-  --restart unless-stopped \
-  --log-driver journald \
-  --health-cmd "redis-cli ping" \
-  --health-interval 30s \
-  -p 6379:6379 \
-  -v redis_data:/data \
-  --security-opt no-new-privileges \
-  ${REDIS_IMAGE} \
-  redis-server --appendonly yes
 
 # ----------------------
-# MySQL容器部署
+# MySQL容器部署（修复版）
 # ----------------------
 docker run -d \
   --name mysql-server \
@@ -50,32 +31,34 @@ docker run -d \
   --bind-address=0.0.0.0 \
   --default-authentication-plugin=mysql_native_password
 
-sleep 20  # 等待MySQL初始化
-echo "=== 部署验证 ==="
-docker exec mysql-server mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "STATUS;"  
+# ----------------------
+# 部署验证优化
+# ----------------------
+echo "=== 等待MySQL初始化（约30秒）==="
+for i in {1..30}; do
+  if docker exec mysql-server mysqladmin -uroot -p"${MYSQL_ROOT_PASSWORD}" ping &>/dev/null; then
+    echo -e "\nMySQL已就绪"
+    docker exec mysql-server mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "STATUS;"
+    break
+  fi
+  printf "."
+  sleep 1
+done
 
 # ----------------------
-# 部署后验证
+# 生成连接信息
 # ----------------------
-echo "部署完成！验证服务状态："
-echo "Redis状态：$(docker inspect --format '{{.State.Health.Status}}' redis-server)"
-echo "MySQL状态：$(docker inspect --format '{{.State.Health.Status}}' mysql-server)"
-
-# 输出连接信息
 cat <<EOF
 
 ================ 连接信息 ================
-MySQL公开访问地址:
-  主机: $(curl -s icanhazip.com)  # 获取公网IP
+MySQL访问地址:
+  内网地址: mysql-server（容器间访问）
+  公网IP: $(curl -s icanhazip.com || echo "无法获取公网IP")
   端口: 3306
-  Root用户密码: ${MYSQL_ROOT_PASSWORD}
+  用户: root
+  密码: ${MYSQL_ROOT_PASSWORD}
 
-Redis公开访问地址:
-  主机: $(curl -s icanhazip.com)
-  端口: 6379
-
-数据卷存储路径：
-  Redis: $(docker volume inspect --format '{{.Mountpoint}}' redis_data)
+数据持久化位置:
   MySQL: $(docker volume inspect --format '{{.Mountpoint}}' mysql_data)
 =========================================
 EOF
